@@ -7,6 +7,8 @@ from .services.music_service import (
     generate_audio_by_prompt,
     get_audio_information,
     get_quota_information,
+    start_suno_service,
+    stop_suno_service,
 )
 
 app = FastAPI()
@@ -48,3 +50,14 @@ async def get_audio(audio_ids: str):
 async def get_quota():
     result = get_quota_information()
     return result
+
+
+@app.post("/api/start_service")
+async def start_service():
+    start_suno_service()
+    return {"status": "started"}
+
+@app.post("/api/stop_service")
+async def stop_service():
+    stop_suno_service()
+    return {"status": "stopped"}

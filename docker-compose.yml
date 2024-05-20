@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  sunoapi:
+    build: /usr/local/dev/MuApi/sunoapi/suno-api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/usr/src/app
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      - FASTAPI_ENV=development
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./frontend:/usr/src/app
+    environment:
+      - NODE_ENV=development
