@@ -13,12 +13,22 @@ export const startService = async () => {
     const response = await fetch('/api/start_service', {
         method: 'POST',
     });
-    return response.json();
+    if (response.ok) {
+        return response.json();
+    } else {
+        const error = await response.json();
+        return { status: "error", message: error.detail || "Failed to start service" };
+    }
 };
 
 export const stopService = async () => {
     const response = await fetch('/api/stop_service', {
         method: 'POST',
     });
-    return response.json();
+    if (response.ok) {
+        return response.json();
+    } else {
+        const error = await response.json();
+        return { status: "error", message: error.detail || "Failed to stop service" };
+    }
 };
