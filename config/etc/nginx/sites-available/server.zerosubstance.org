@@ -1,0 +1,48 @@
+server {
+    server_name server.zerosubstance.org;
+
+    # Serve the static file for the root path
+    location / {
+        root /var/www/server.zerosubstance.org;
+        index index.html;
+    }
+
+    # Proxy requests to /musicgen to the demo app
+    location /musicgen/ {
+        proxy_pass http://localhost:3001/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/server.zerosubstance.org/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/server.zerosubstance.org/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+    server_tokens off;
+
+    # Optional: Add security headers
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Frame-Options DENY;
+    add_header X-Content-Type-Options nosniff;
+    add_header X-XSS-Protection "1; mode=block";
+}
+
+server {
+    listen 80;
+    server_name server.zerosubstance.org;
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+
+    # managed by Certbot
+    if ($host = server.zerosubstance.org) {
+        return 301 https://$host$request_uri;
+    }
+}
+
