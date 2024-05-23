@@ -2,27 +2,40 @@ version: '3.8'
 
 services:
   sunoapi:
-    build: /usr/local/dev/MuApi/sunoapi/suno-api
+    container_name: musicdata_sunoapi
+    build:
+      context: ./suno-api
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=development
+    volumes:
+      - ./suno-api:/usr/src/app/suno-api
 
   backend:
+    container_name: musicdata_backend
     build: ./backend
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/usr/src/app
+      - ./backend:/usr/src/app/backend
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./suno-api:/usr/src/app/suno-api
+      - ./frontend:/usr/src/app/frontend
+      - ./docker-compose.yml:/usr/src/app/docker-compose.yml
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
     environment:
       - FASTAPI_ENV=development
+      - SUNOAPI_BASE_URL=http://sunoapi:3000
+      - PROJ_COMPOSE=/usr/src/app/docker-compose.yml
 
   frontend:
+    container_name: musicdata_frontend
     build: ./frontend
     ports:
       - "3001:3001"
     volumes:
-      - ./frontend:/usr/src/app
+      - ./frontend:/usr/src/app/frontend
+      - ./docker-compose.yml:/usr/src/app/docker-compose.yml
     environment:
       - NODE_ENV=development
