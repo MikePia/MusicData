@@ -14,7 +14,8 @@ services:
 
   backend:
     container_name: musicdata_backend
-    build: ./backend
+    build:
+      context: ./backend
     ports:
       - "8000:8000"
     volumes:
@@ -22,7 +23,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./suno-api:/usr/src/app/suno-api
       - ./frontend:/usr/src/app/frontend
-      - ./docker-compose.yml:/usr/src/app/docker-compose.yml
+      - ./docker-compose.dev.yml:/usr/src/app/docker-compose.yml
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
     environment:
       - FASTAPI_ENV=development
@@ -31,14 +32,16 @@ services:
 
   frontend:
     container_name: musicdata_frontend
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
     ports:
-      - "8080:80"
+      - "3001:3000"
     volumes:
       - ./frontend:/usr/src/app/frontend
-      - ./docker-compose.yml:/usr/src/app/docker-compose.yml
+      - ./docker-compose.dev.yml:/usr/src/app/docker-compose.yml
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
     depends_on:
       - backend
       - sunoapi

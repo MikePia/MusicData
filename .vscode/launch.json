@@ -21,10 +21,23 @@
             },
             "pathMappings": [
               {
-                "localRoot": "${workspaceFolder}",
+                "localRoot": "${workspaceFolder}/frontend",
                 "remoteRoot": "/app"
               }
             ]
-          }
+          },
+
+          {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug React Build",
+            "skipFiles": ["<node_internals>/**"],
+            "program": "${workspaceFolder}/frontend/node_modules/react-scripts/scripts/build.js",
+            "console": "integratedTerminal",
+            "sourceMaps": true,
+            "outFiles": ["${workspaceFolder}/frontend/build/**/*.js"]
+        }
+
+
     ]
 }
