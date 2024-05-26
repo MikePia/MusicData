@@ -7,7 +7,8 @@ import sys
 import argparse
 
 # Load environment variables from a .env file
-load_dotenv()
+result = load_dotenv()
+logging.warning(f"Result: {result}")
 
 def is_running_in_docker():
     return os.path.exists("/.dockerenv")
@@ -16,11 +17,17 @@ def is_running_in_docker():
 running_in_docker = is_running_in_docker()
 
 # Determine the correct docker-compose file based on NODE_ENV
-node_env = os.getenv("NODE_ENV", "development")
-if node_env == "production":
-    proj_compose = os.getenv("PROJ_COMPOSE_DOCKER_PROD" if running_in_docker else "PROJ_COMPOSE_PROD")
+node_env = os.getenv("NODE_ENV", "dev")
+
+if node_env == "prod":
+    proj_compose = os.getenv("PROJ_COMPOSE_DOCKER_PROD") if running_in_docker else os.getenv("PROJ_COMPOSE_PROD")
+    logging.info(f"Running in production mode using docker-compose file at: {proj_compose}")
+    
 else:
-    proj_compose = os.getenv("PROJ_COMPOSE_DOCKER_DEV" if running_in_docker else "PROJ_COMPOSE_DEV")
+    proj_compose = os.getenv("PROJ_COMPOSE_DOCKER_DEV") if running_in_docker else os.getenv("PROJ_COMPOSE_DEV")
+    logging.info(f"Running in development mode using docker-compose file at: {proj_compose}")
+
+assert proj_compose, "No docker-compose file found"
 
 logging.basicConfig(level=logging.DEBUG)
 logging.debug(f"Using docker-compose file at: {proj_compose}")

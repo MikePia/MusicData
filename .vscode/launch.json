@@ -1,39 +1,47 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Python Debugger: Current File",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal"
-        },
-        {
-          "name": "Docker: Attach to Node",
-          "type": "node",
-          "request": "attach",
-          "port": 9229,
-          "address": "localhost",
-          "restart": true,
-          "localRoot": "${workspaceFolder}/frontend",
-          "remoteRoot": "/app",
-          "protocol": "inspector"
-        },
-
-          {
-            "type": "node",
-            "request": "launch",
-            "name": "Debug React Build",
-            "skipFiles": ["<node_internals>/**"],
-            "program": "${workspaceFolder}/frontend/node_modules/react-scripts/scripts/build.js",
-            "console": "integratedTerminal",
-            "sourceMaps": true,
-            "outFiles": ["${workspaceFolder}/frontend/build/**/*.js"]
-        }
-
-
-    ]
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python Debugger: Module",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "app.service.music_service"
+      "args":"${command:pickArgs}"
+    },
+    {
+      "name": "Python Debugger: Current File",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Docker: Attach to Node",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "address": "localhost",
+      "restart": true,
+      "localRoot": "${workspaceFolder}/frontend",
+      "remoteRoot": "/app",
+      "protocol": "inspector"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug React Build",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}/frontend/node_modules/react-scripts/scripts/build.js",
+      "console": "integratedTerminal",
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceFolder}/frontend/build/**/*.js"
+      ]
+    }
+  ]
 }

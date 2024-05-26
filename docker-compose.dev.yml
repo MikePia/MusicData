@@ -6,7 +6,7 @@ services:
     build:
       context: ./suno-api
     ports:
-      - "3001:3000"
+      - "3000:3000"
     environment:
       - NODE_ENV=development
     volumes:
@@ -23,7 +23,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./suno-api:/usr/src/app/suno-api
       - ./frontend:/usr/src/app/frontend
-      - ./docker-compose.dev.yml:/usr/src/app/docker-compose.yml
+      - ./docker-compose.dev.yml:/usr/src/app/docker-compose.dev.yml
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
     environment:
       - FASTAPI_ENV=development

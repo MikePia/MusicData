@@ -18,9 +18,10 @@ app = FastAPI()
 
 # Set up CORS middleware
 origins = [
-    "http://localhost:3000",  # React frontend
-    "http://localhost:3001",  # Another possible port for React frontend
-    "http://localhost:8001",  # FastAPI backend inside the container
+    "http://localhost:3000",
+    # "http://localhost:3001",
+    "http://localhost:3002",  # React frontend in development
+    "http://localhost:8001",
 ]
 
 app.add_middleware(
@@ -86,7 +87,9 @@ def get_service_name():
 async def start_service():
     logging.debug("Start service endpoint hit")
     service_name = get_service_name()
+    logging.debug(f"Service name: {service_name}, calling start_suno_service")
     result = start_suno_service(service_name)
+    logging.debug(f"Called start_suno_service, result: {result}")
     if result["returncode"] != 0:
         raise HTTPException(status_code=500, detail=result["error"])
     return result
