@@ -4,26 +4,23 @@ import logging
 import os
 from dotenv import load_dotenv
 import sys
+import argparse
 
 # Load environment variables from a .env file
 load_dotenv()
 
 def is_running_in_docker():
-    path = "/.dockerenv"
-    return os.path.exists(path)
+    return os.path.exists("/.dockerenv")
 
+# Determine if running inside Docker
 running_in_docker = is_running_in_docker()
 
-if running_in_docker:
-    print("Running inside Docker")
-    proj_compose = os.getenv(
-        "PROJ_COMPOSE", "/usr/src/app/docker-compose.yml"
-    )
+# Determine the correct docker-compose file based on NODE_ENV
+node_env = os.getenv("NODE_ENV", "development")
+if node_env == "production":
+    proj_compose = os.getenv("PROJ_COMPOSE_DOCKER_PROD" if running_in_docker else "PROJ_COMPOSE_PROD")
 else:
-    print("Running outside Docker")
-    proj_compose = os.getenv(
-        "PROJ_COMPOSE", "/usr/local/dev/MuApi/MusicData/docker-compose.yml"
-    )
+    proj_compose = os.getenv("PROJ_COMPOSE_DOCKER_DEV" if running_in_docker else "PROJ_COMPOSE_DEV")
 
 logging.basicConfig(level=logging.DEBUG)
 logging.debug(f"Using docker-compose file at: {proj_compose}")
@@ -84,10 +81,12 @@ def get_container_id(service_name):
         logging.error(f"Failed to get container ID for {service_name}. Error: {result.stderr}")
         return None
 
-def stop_suno_service():
-    container_id = get_container_id("musicdata_sunoapi")
+def stop_suno_service(service_name):
+    logging.info("In stop_suno_service({service_name})")
+    container_id = get_container_id(service_name)
+    logging.info(f'Container ID: {container_id}')
     if not container_id:
-        logging.error("Suno API service container not found.")
+        logging.error(f"{service_name} container not found.")
         return {"returncode": 1, "error": "Container not found"}
 
     # Attempt to stop the container
@@ -96,9 +95,10 @@ def stop_suno_service():
         "stop",
         container_id
     ]
+    logging.info(f"Stop command: {' '.join(command_stop)}")
     result_stop = run_command(command_stop)
     if result_stop.returncode != 0:
-        logging.error(f"Failed to stop Suno API service. Error: {result_stop.stderr}")
+        logging.error(f"Failed to stop {service_name}. Error: {result_stop.stderr}")
         return {"returncode": result_stop.returncode, "error": result_stop.stderr}
 
     # Remove the container if it exists
@@ -107,15 +107,16 @@ def stop_suno_service():
         "rm",
         container_id
     ]
+    logging.info(f"Remove command: {' '.join(command_rm)}")
     result_rm = run_command(command_rm)
     if result_rm.returncode != 0:
-        logging.error(f"Failed to remove Suno API service. Error: {result_rm.stderr}")
+        logging.error(f"Failed to remove {service_name}. Error: {result_rm.stderr}")
         return {"returncode": result_rm.returncode, "error": result_rm.stderr}
     else:
-        logging.info("Suno API service stopped and removed successfully.")
-        return {"returncode": 0, "output": "Suno API service stopped and removed successfully"}
+        logging.info(f"{service_name} stopped and removed successfully.")
+        return {"returncode": 0, "output": f"{service_name} stopped and removed successfully"}
 
-def start_suno_service():
+def start_suno_service(service_name):
     logging.debug(f"start_suno_service using docker-compose file at: {proj_compose}")
     command = [
         "docker-compose",
@@ -123,27 +124,35 @@ def start_suno_service():
         proj_compose,
         "up",
         "-d",
-        "sunoapi",
+        service_name,
     ]
     logging.debug(f"Start service command: {' '.join(command)}")
 
     result = run_command(command)
     if result.returncode != 0:
-        logging.error(f"Failed to start Suno API service. Error: {result.stderr}")
+        logging.error(f"Failed to start {service_name}. Error: {result.stderr}")
         return {"returncode": result.returncode, "error": result.stderr}
     else:
         logging.info(
-            f"Suno API service started successfully. Output: {result.stdout}"
+            f"{service_name} started successfully. Output: {result.stdout}"
         )
-        return {"returncode": 0, "output": "Suno API service started successfully"}
-
+        return {"returncode": 0, "output": f"{service_name} started successfully"}
 
 if __name__ == "__main__":
-    # Add commandline arg to run start or stop
-    if len(sys.argv) < 2:
-        print("Usage: python music_service.py start|stop")
-        sys.exit(1)
-    elif sys.argv[1] == "start":
-        start_suno_service()
-    elif sys.argv[1] == "stop":
-        stop_suno_service()
+    parser = argparse.ArgumentParser(description="Start or stop the Suno service.")
+    parser.add_argument('action', choices=['start', 'stop'], help="Action to perform: start or stop the service.")
+    
+    # Get the default environment from NODE_ENV and validate it
+    parser.add_argument('-e', '--env', choices=['dev', 'prod'], default=node_env,
+                        help="Specify the environment: dev or prod. Defaults to NODE_ENV or 'development'.")
+
+    args = parser.parse_args()
+
+    # Determine the service name based on the provided or default environment
+    environment = args.env
+    service_name = "sunoapi" if environment == "prod" else "sunoapi_dev"
+
+    if args.action == "start":
+        start_suno_service(service_name)
+    elif args.action == "stop":
+        stop_suno_service(service_name)

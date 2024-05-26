@@ -30,6 +30,7 @@ export const startService = async () => {
 };
 
 export const stopService = async () => {
+    console.log("Stop Service calling fetch for /api/stop_service")
     const response = await fetch(`${config.apiBaseUrl}/api/stop_service`, {
         method: 'POST',
     });

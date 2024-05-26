@@ -8,7 +8,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=prod
     volumes:
       - ./suno-api:/usr/src/app/suno-api
 
@@ -25,7 +25,7 @@ services:
       - ./docker-compose.yml:/usr/src/app/docker-compose.yml
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
     environment:
-      - FASTAPI_ENV=development
+      - FASTAPI_ENV=production
       - SUNOAPI_BASE_URL=http://sunoapi:3000
       - PROJ_COMPOSE=/usr/src/app/docker-compose.yml
 
@@ -42,3 +42,7 @@ services:
     depends_on:
       - backend
       - sunoapi
+
+networks:
+  default:
+    name: musicdata_prod_network

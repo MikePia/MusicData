@@ -12,12 +12,15 @@ from .services.music_service import (
     stop_suno_service,
 )
 import logging
+import os
 
 app = FastAPI()
 
 # Set up CORS middleware
 origins = [
-    "http://localhost:3001",
+    "http://localhost:3000",  # React frontend
+    "http://localhost:3001",  # Another possible port for React frontend
+    "http://localhost:8001",  # FastAPI backend inside the container
 ]
 
 app.add_middleware(
@@ -74,10 +77,16 @@ async def get_quota():
     return result
 
 
+def get_service_name():
+    node_env = os.getenv("NODE_ENV", "development")
+    return "sunoapi" if node_env == "production" else "sunoapi_dev"
+
+
 @app.post("/api/start_service")
 async def start_service():
     logging.debug("Start service endpoint hit")
-    result = start_suno_service()
+    service_name = get_service_name()
+    result = start_suno_service(service_name)
     if result["returncode"] != 0:
         raise HTTPException(status_code=500, detail=result["error"])
     return result
@@ -85,8 +94,11 @@ async def start_service():
 
 @app.post("/api/stop_service")
 async def stop_service():
-    logging.debug("Stop service endpoint hit")
-    result = stop_suno_service()
+    logging.info("Stop service endpoint hit, calling get_service_name()")
+    service_name = get_service_name()
+    logging.info(f"Service name: {service_name}, calling stop_suno_service")
+    result = stop_suno_service(service_name)
+    logging.info(f"Result from stop_suno_service: {result}")
     if result["returncode"] != 0:
         raise HTTPException(status_code=500, detail=result["error"])
     return result
